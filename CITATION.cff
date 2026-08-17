@@ -1,0 +1,38 @@
+cff-version: 1.2.0
+title: "paper-skills: deep pre-submission review and grounded drafting for scientific manuscripts"
+message: "If you use these skills in published work, please cite this repository."
+type: software
+authors:
+  - family-names: Raibolt
+    given-names: Alexandra
+    # orcid: "https://orcid.org/0000-0000-0000-0000"   # preencher
+repository-code: "https://github.com/whoisraibolt/paper-skills"
+license: MIT
+keywords:
+  - scientific-writing
+  - peer-review
+  - large-language-models
+  - agent-skills
+  - claude-code
+references:
+  - type: article
+    title: "Towards Automating Scientific Review with Google's Paper Assistant Tool"
+    authors:
+      - family-names: Jayaram
+        given-names: Rajesh
+      - family-names: Tyler
+        given-names: Drew
+      - family-names: Woodruff
+        given-names: David
+      - family-names: Cortes
+        given-names: Corinna
+      - family-names: Matias
+        given-names: Yossi
+      - family-names: Mirrokni
+        given-names: Vahab
+      - family-names: Cohen-Addad
+        given-names: Vincent
+    year: 2026
+    identifiers:
+      - type: other
+        value: "arXiv:2606.28277"
