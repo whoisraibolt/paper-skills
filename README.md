@@ -19,6 +19,41 @@ for all projects.
 
 ---
 
+## What it produces
+
+**→ [See a full review report](examples/revisao-exemplo.md)** — produced by
+`paper-reviewer` on [this synthetic manuscript](examples/manuscrito-exemplo.md)
+with deliberately planted defects.
+
+A sample of what it catches:
+
+> ### [CRÍTICO] Achado garantido por construção apresentado como descoberta empírica
+>
+> **Onde:** `manuscrito-exemplo.md:96`, definição em `:76`
+> **Texto:** "consultas classificadas como complexas mencionam, em média, 3,4
+> entidades técnicas, enquanto consultas simples mencionam 1,6."
+> **Defeito:** A Seção 3.3 define complexa como "mais de duas entidades técnicas
+> distintas". Que o grupo "mais de duas" tenha média superior ao grupo "até duas"
+> é consequência aritmética da definição, não resultado.
+> **Confiança:** CONFIRMADO — verificado contra a definição no próprio manuscrito.
+> **Eu estaria errado se:** a densidade de entidades tivesse sido medida por um
+> instrumento independente da regra de partição.
+
+Every finding carries a literal quote, a confidence level, and **what would have
+to be true for the finding to be wrong**. Findings without a quote are discarded
+at consolidation, not downgraded.
+
+The report also includes the Stage 3.5 language-signature scan, with the honest
+framing the design requires:
+
+> **A1, A2 and A3 do not fire. They are removable by find-and-replace and are
+> therefore non-diagnostic when they pass: the low count licenses no inference.**
+
+The example is synthetic on purpose. Publishing a critique of a real paper in a
+tool's README would expose named authors to a review they never asked for.
+
+---
+
 ## Why segmentation
 
 A single reading pass spends its reasoning budget uniformly and shallowly. It
