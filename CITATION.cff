@@ -5,7 +5,7 @@ type: software
 authors:
   - family-names: Raibolt
     given-names: Alexandra
-    # orcid: "https://orcid.org/0000-0000-0000-0000"   # preencher
+    orcid: "https://orcid.org/0000-0002-8982-596X"
 repository-code: "https://github.com/whoisraibolt/paper-skills"
 license: MIT
 # DOI-conceito: resolve sempre para a versão mais recente. É o que se cita para
