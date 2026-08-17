@@ -8,6 +8,11 @@ authors:
     # orcid: "https://orcid.org/0000-0000-0000-0000"   # preencher
 repository-code: "https://github.com/whoisraibolt/paper-skills"
 license: MIT
+# DOI-conceito: resolve sempre para a versão mais recente. É o que se cita para
+# referir a ferramenta. O DOI da v1.0.0 especificamente é 10.5281/zenodo.21982662.
+doi: 10.5281/zenodo.21982661
+version: v1.0.0
+date-released: "2026-08-17"
 keywords:
   - scientific-writing
   - peer-review

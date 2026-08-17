@@ -1,5 +1,8 @@
 # paper-skills
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21982661.svg)](https://doi.org/10.5281/zenodo.21982661)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 Two Claude Code skills for scientific manuscripts: a deep pre-submission
 **reviewer** and a grounded **writer**. Both use the same architecture —
 segment the manuscript, give every agent the *whole* text as context but only
@@ -195,7 +198,20 @@ endorsed by Google or Anthropic.
 Stage 3.5 of `paper-reviewer` and the grounding contract of `paper-writer` are
 original to this repository.
 
+## How to cite
+
+If you use these skills in published work, please cite the archived release:
+
+> Raibolt, A. (2026). *paper-skills: deep pre-submission review and grounded
+> drafting for scientific manuscripts* (v1.0.0). Zenodo.
+> https://doi.org/10.5281/zenodo.21982661
+
+The DOI above is the **concept DOI**: it always resolves to the most recent
+version. To cite v1.0.0 specifically, use `10.5281/zenodo.21982662`.
+
+Machine-readable metadata is in [CITATION.cff](CITATION.cff); GitHub's
+"Cite this repository" button reads it.
+
 ## License
 
-MIT — see [LICENSE](LICENSE). If you use these in published work, a citation is
-appreciated; see [CITATION.cff](CITATION.cff).
+MIT — see [LICENSE](LICENSE).
