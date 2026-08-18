@@ -159,9 +159,18 @@ baixa não licencia nenhuma inferência."*
 
 | # | Critério | Alerta |
 |---|---|---|
-| A1 | Conectores encabeçando frase (*além disso, contudo, entretanto, portanto, vale destacar, em outras palavras, isso significa que, em conclusão*) | acima de 4 por parágrafo |
-| A2 | Absolutismo lexical (*sempre, nunca, claramente, obviamente, sem dúvida, evidentemente*) | acima de 3 por página |
+| A1 | Conectores encabeçando frase (*além disso, contudo, entretanto, portanto, vale destacar, em outras palavras, isso significa que, em conclusão*) | acima de **0,38 por parágrafo** |
+| A2 | Absolutismo lexical (*sempre, nunca, claramente, obviamente, sem dúvida, evidentemente*) | acima de **1,9 por 1.000 palavras** |
 | A3 | Travessão longo (—) em excesso | — |
+
+> **De onde vêm estes limiares.** Foram calibrados contra 36 artigos integrais
+> em PT-BR do SciELO publicados até 2019, no percentil 95 da escrita humana. As
+> versões anteriores eram afirmadas a partir de uso e estavam erradas por até uma
+> ordem de grandeza: A1 alertava acima de 4 por parágrafo quando texto acadêmico
+> real, humano e de máquina, roda em 0,2 a 0,4. Aquele limiar nunca disparava.
+>
+> A calibração é específica desse corpus. Aplicá-la a outra língua, gênero ou
+> área é extrapolação não medida, e vale recalibrar antes de confiar.
 
 Se dispararem, são achados normais, com contagem e trecho. Se não dispararem,
 **uma linha dizendo que são não-diagnósticos, e nada mais**. Não os liste como
@@ -179,14 +188,14 @@ isso, os únicos que carregam informação de verdade.
 
 | # | Critério | Como medir | Alerta |
 |---|---|---|---|
-| B1 | **Simetria de template** | coeficiente de variação do tamanho dos parágrafos, global **e por bloco de seção** | CV abaixo de 30% |
+| B1 | **Simetria de template** | coeficiente de variação do tamanho dos parágrafos, global **e por bloco de seção** | CV abaixo de 33% |
 | B2 | **Redundância semântica** | n-gramas de 8+ palavras repetidos; mesma proposição em pontos distantes | qualquer cadeia |
 | B3 | **Tautologia definicional** | achado que a regra de classificação **garante por construção** | qualquer ocorrência |
 | B4 | **Hipotaxe inflacionada** | distribuição do comprimento de sentença, com atenção à cauda | sentenças acima de ~60 palavras |
-| B5 | **Frame retórico único** | contagem do modo *default* de afirmar (*X, e não Y*; *não apenas… mas também*; *ao passo que*) | frame dominante em >20% dos parágrafos |
-| B6 | **Voz autoral ausente** | proporção de parágrafos que relatam sem posicionar | acima de 70% |
+| B5 | **Frame retórico único** | contagem do modo *default* de afirmar (*X, e não Y*; *não apenas… mas também*; *ao passo que*) | frame dominante em **>5,7%** dos parágrafos |
+| B6 | **Voz autoral ausente** | **leitura humana; não automatizar** | sem limiar — ver abaixo |
 | B7 | **Conclusão tautológica** | sobreposição da conclusão com o corpo, mais leitura direta | qualquer ocorrência |
-| B8 | **Ritmo robótico** | mesma medida de B4, outra cauda: sujeito + verbo + complemento em cadeia | CV do comprimento de sentença abaixo de 30% |
+| B8 | **Ritmo robótico** | mesma medida de B4, outra cauda: sujeito + verbo + complemento em cadeia | CV do comprimento de sentença abaixo de 43% |
 | B9 | **Ilusão de profundidade** | reformulação para ganhar volume; metáfora genérica no lugar de análise; afirmação autoevidente vendida como implicação | qualquer ocorrência |
 
 **B4 e B8 são a mesma medição, lida nas duas pontas.** Calcule uma vez a
@@ -202,11 +211,20 @@ Quatro notas de medição, aprendidas em uso:
   Quando o texto define uma categoria e depois apresenta como descoberta um
   padrão que a definição garante, isso é **problema de validade**. Um parecerista
   atento aponta. Marque como `CRÍTICO` e mande para o Estágio 4 verificar.
-- **B6 super-marca quando automatizado.** Regex não reconhece posicionamento
-  indireto (*"converge com a avaliação conduzida neste trabalho"*, *"esta lacuna
-  constitui a motivação central"*). Use o automático para **localizar**, depois
-  reconfira à mão antes de dar veredito. A diferença observada entre proxy e
-  leitura foi de 15 a 25 pontos percentuais.
+- **B6 não deve ser automatizado. Isto foi medido, não estimado.** Uma versão
+  anterior desta skill dizia que o proxy por expressão regular super-marcava em
+  15 a 25 pontos percentuais e recomendava usá-lo para *localizar* parágrafos.
+  Medimos: contra um leitor independente e cego, em amostra estratificada de 154
+  parágrafos de artigos humanos, a concordância foi de **49,4%**. Para julgamento
+  binário isso é o acaso, e a discordância é bidirecional (60,0% num sentido,
+  40,5% no outro), que é a assinatura de duas medidas não relacionadas.
+
+  Localizar ao acaso é sortear, então nem a recomendação atenuada se sustenta.
+  **B6 permanece como critério; o que se retira é a automação dele.** Leia os
+  parágrafos e julgue se o autor se posiciona ou apenas relata.
+
+  Ressalva da própria validação: o leitor independente é um modelo, não uma
+  pessoa. Isso sustenta que as duas medidas discordam, não qual delas acerta.
 
 ### O enquadramento honesto, que vai no relatório
 
