@@ -55,8 +55,9 @@ at consolidation, not downgraded.
 The report also includes the Stage 3.5 language-signature scan, with the honest
 framing the design requires:
 
-> **A1, A2 and A3 do not fire. They are removable by find-and-replace and are
-> therefore non-diagnostic when they pass: the low count licenses no inference.**
+> **A1 and A2 fire (0.50 connectives/paragraph against 0.38; 4.55 absolutists
+> per 1,000 words against 1.9). A3 does not: it is removable by find-and-replace
+> and is therefore non-diagnostic when it passes.**
 
 The example is synthetic on purpose. Publishing a critique of a real paper in a
 tool's README would expose named authors to a review they never asked for.
