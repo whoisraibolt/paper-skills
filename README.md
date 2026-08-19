@@ -8,9 +8,15 @@ Two Claude Code skills for scientific manuscripts: a deep pre-submission
 segment the manuscript, give every agent the *whole* text as context but only
 *one* segment as its target, run them in parallel, then consolidate.
 
-The skill bodies are written in Brazilian Portuguese, and the writer ships an
-ABNT-oriented voice example. The architecture is language-agnostic; the reviewer
-works on manuscripts in any language.
+`paper-reviewer` is written in English and ships lexicons for **English and
+Brazilian Portuguese**. `paper-writer` is written in Brazilian Portuguese and
+ships an ABNT-oriented voice example, because its value is the Portuguese-language
+academic context.
+
+**Stage 3.5 thresholds are empirically calibrated**, not asserted: against 76
+full-text human articles published before 2020. The previous asserted values were
+wrong by up to a factor of eight, and one criterion had its automation withdrawn
+after failing validation. See [Measured, not asserted](#measured-not-asserted).
 
 ```bash
 npx -y skills add whoisraibolt/paper-skills --skill paper-reviewer --agent claude-code
@@ -121,9 +127,39 @@ diagnoses the text, not the author).
 
 And the honest framing, which goes in every report: these markers **do not prove
 AI authorship**. A rushed human produces all of them; a well-revised assisted
-text produces none. What they actually measure is weak writing — structural
-predictability, artificial emphasis, and claims without backing. That is what
-holds up, and it is also what is actionable.
+text produces none. What they actually measure is weak writing, meaning
+structural predictability, artificial emphasis, and claims without backing. That
+is what holds up, and it is also what is actionable.
+
+### Measured, not asserted
+
+Most skills of this kind ship thresholds someone picked by intuition. These were
+measured against a corpus of 76 full-text human academic articles published
+before 2020, at the 95th percentile of human writing. Three things came out of
+it, and all three are in the skill:
+
+**The asserted thresholds were wrong by up to a factor of eight.** A1 alerted
+above 4 connectives per paragraph when real academic text, human and machine
+alike, runs at 0.2 to 0.4. That threshold never fired. It is now 0.48.
+
+**One criterion had its automation withdrawn.** B6 (absent authorial voice) was
+operationalized as a regular-expression proxy. Against an independent blind reader
+on a stratified sample of 154 paragraphs, agreement was **49.4%**, which for a
+binary judgement is chance. The criterion remains valid for human reading; the
+automation is gone.
+
+**The lexical criteria are language-specific, and the failure is silent.** Running
+Portuguese lexicons over an English corpus returns an AUC of exactly 0.500: every
+text scores zero and all of them tie. The instrument does not measure a little,
+it measures nothing. This holds for any detector resting on a word list, and it is
+rarely declared. Both lexicons ship with the skill:
+[English](skills/paper-reviewer/references/lexicons-en.md) and
+[Portuguese](skills/paper-reviewer/references/lexicons-pt.md).
+
+The calibration is specific to that corpus (Brazilian Portuguese, pre-2020,
+across the fields the collection returned). Applying it to another language,
+genre or field is unmeasured extrapolation, and recalibrating first is worth the
+effort.
 
 ---
 

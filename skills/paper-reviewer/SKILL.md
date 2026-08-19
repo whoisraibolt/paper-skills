@@ -1,323 +1,418 @@
 ---
 name: paper-reviewer
-description: Deep pre-submission review of a scientific manuscript, modeled on Google's Paper Assistant Tool (PAT). Segments the manuscript, allocates a reasoning budget per segment, dispatches deep reviewers in parallel (each with the full text as context), and consolidates into a single report with severity, quoted evidence, and anti-hallucination checks. Use when asked to review, audit, critique, or validate a paper, thesis, dissertation, chapter, or proposal before submission. Accepts .tex, .md, .pdf, and .docx.
+description: Deep pre-submission review of a scientific manuscript, modeled on Google's Paper Assistant Tool (PAT). Segments the manuscript, allocates a reasoning budget per segment, dispatches deep reviewers in parallel (each with the full text as context), and consolidates into a single report with severity, quoted evidence, and anti-hallucination checks. Use when asked to review, audit, critique, or validate a paper, thesis, dissertation, chapter, or proposal before submission. Accepts .tex, .md, .pdf, and .docx. Works in English and Brazilian Portuguese.
 license: MIT
 ---
 
-# paper-reviewer — revisão profunda pré-submissão
+# paper-reviewer — deep pre-submission review
 
-Reimplementação da arquitetura do **Paper Assistant Tool (PAT)** (Jayaram et al., Google Research, arXiv:2606.28277) usando subagentes do Claude Code no lugar do Gemini Deep Think.
+A reimplementation of the **Paper Assistant Tool (PAT)** architecture (Jayaram et
+al., Google Research, arXiv:2606.28277) on Claude Code subagents in place of
+Gemini Deep Think.
 
-A premissa do PAT, que é o que faz esta skill valer a pena em vez de "leia o artigo e critique": uma única passada de leitura gasta o orçamento de raciocínio de forma uniforme e rasa. Segmentar o manuscrito, dar a cada revisor **o texto inteiro como contexto mas só um segmento para verificar**, e depois consolidar com deduplicação e checagem de fundamentação, eleva bastante a taxa de detecção de erro real. No subconjunto Math/CS do benchmark SPOT, essa orquestração levou o mesmo modelo de 55,2% para 89,7% de detecção.
+The premise from PAT, which is what makes this skill worth more than "read the
+paper and criticize it": a single reading pass spends its reasoning budget
+uniformly and shallowly. Segmenting the manuscript, giving each reviewer **the
+whole text as context but only one segment to verify**, then consolidating with
+deduplication and grounding checks, raises real-error detection substantially. On
+the Math/CS subset of the SPOT benchmark, this orchestration took the same model
+from 55.2% to 89.7% detection.
 
-Não produz nota, ranking nem recomendação de aceite. Produz **erros objetivos e melhorias acionáveis**.
+It produces no score, no ranking and no accept/reject recommendation. It produces
+**objective errors and actionable improvements**.
 
-Par de escrita: `paper-writer`. Redação e revisão são passes separados por design — quem escreve não aprova o próprio texto no mesmo contexto.
-
----
-
-## Estágio 0 — Resolver o alvo
-
-1. Se o usuário nomeou um arquivo, use-o. Se não, procure o manuscrito mais provável no diretório atual (`.tex` com `\documentclass`, ou `.md` longo) e **confirme com o usuário antes de gastar os agentes** se houver mais de um candidato.
-2. **Prefira sempre a fonte sobre o PDF.** O PAT lista falha de parsing de PDF entre suas três limitações mais reportadas. Se existe `.tex` ou `.md`, use-o e ignore o PDF compilado.
-3. Leia o manuscrito **inteiro** antes de segmentar. Sem isso a segmentação sai errada.
-4. Localize os insumos de verificação, se existirem:
-   - o `.bib` / arquivo de referências;
-   - dados, tabelas de resultado ou saídas de experimento no repositório (ex.: `data/outputs/`), que permitem conferir número por número;
-   - revisões, auditorias ou pareceres anteriores (ex.: `auditorias/`, `resposta_*.md`, `HANDOFF.md`) — servem para **não repetir** ponto já resolvido.
+Writing counterpart: `paper-writer`. Writing and reviewing are separate passes by
+design; whoever writes does not approve their own text in the same context.
 
 ---
 
-## Estágio 1 — Segmentação
+## Stage 0 — Resolve the target
 
-Quebre o manuscrito em **segmentos semânticos**, não em pedaços de tamanho igual. Um segmento é um conjunto de seções que compartilham um tema lógico e que se verificam em conjunto. Podem ser **não contíguos**: se o resumo antecipa um número da Seção 7, os dois pertencem ao mesmo segmento.
+1. If the user named a file, use it. Otherwise look for the most likely
+   manuscript in the current directory (a `.tex` with `\documentclass`, or a long
+   `.md`) and **confirm with the user before spending agents** if there is more
+   than one candidate.
+2. **Always prefer source over PDF.** PAT lists PDF parsing failure among its
+   three most reported limitations. If a `.tex` or `.md` exists, use it and ignore
+   the compiled PDF.
+3. Read the **whole** manuscript before segmenting. Without that, the
+   segmentation comes out wrong.
+4. Locate verification inputs, if they exist:
+   - the `.bib` or reference file;
+   - data, result tables or experiment outputs in the repository (for example
+     `data/outputs/`), which allow checking number by number;
+   - previous reviews, audits or referee reports (for example `reviews/`,
+     `response_*.md`, `HANDOFF.md`), which serve to **avoid repeating** a point
+     already resolved.
 
-Segmentação típica de artigo empírico:
+---
 
-| Segmento | Costuma reunir |
+## Stage 1 — Segmentation
+
+Break the manuscript into **semantic segments**, not into equal-sized chunks. A
+segment is a set of sections that share a logical theme and are verified
+together. Segments may be **non-contiguous**: if the abstract quotes a number
+from Section 7, both belong to the same segment.
+
+Typical segmentation of an empirical paper:
+
+| Segment | Usually gathers |
 |---|---|
-| Enquadramento | Resumo, Introdução, Considerações Finais, contribuições declaradas |
-| Trabalhos relacionados | Estado da arte, posicionamento da lacuna |
-| Método / arquiteturas | O que foi construído ou comparado |
-| Definição de métrica | Toda métrica proposta pelos autores, com sua formalização |
-| Dados | Conjuntos, proveniência, construção, licenciamento |
-| Protocolo experimental | O que ficou fixo, configuração, análise estatística |
-| Resultados | Tabelas, figuras, números no corpo do texto |
-| Discussão e limitações | Interpretação, ameaças à validade, trabalho futuro |
+| Framing | Abstract, Introduction, Conclusion, claimed contributions |
+| Related work | State of the art, positioning of the gap |
+| Method / architectures | What was built or compared |
+| Metric definition | Every metric the authors propose, with its formalization |
+| Data | Datasets, provenance, construction, licensing |
+| Experimental protocol | What was held fixed, configuration, statistical analysis |
+| Results | Tables, figures, numbers in the body text |
+| Discussion and limitations | Interpretation, threats to validity, future work |
 
-Ajuste ao manuscrito real. Um artigo teórico troca "Resultados" por "Provas"; um bibliométrico troca "Arquiteturas" por "Protocolo de busca".
-
----
-
-## Estágio 2 — Orçamento adaptativo
-
-Atribua a cada segmento uma faixa de esforço conforme a densidade de afirmação verificável. Isto é o que o PAT chama de Light/Medium/High Thinking.
-
-- **ALTO** — onde um erro invalida o artigo. Definição de métrica, provas, protocolo estatístico, tabelas de resultado, qualquer número que apareça em mais de um lugar. Estes segmentos vão para revisores com `model: opus` e instrução explícita de raciocinar linha a linha.
-- **MÉDIO** — método, dados, configuração experimental, discussão. `model: opus`, verificação normal.
-- **BAIXO** — enquadramento, trabalhos relacionados, seções de agradecimento e declaração. `model: sonnet` basta.
-
-Anuncie a segmentação e o orçamento ao usuário em uma tabela curta antes de disparar. É a última chance de corrigir o recorte barato.
+Adjust to the actual manuscript. A theoretical paper swaps "Results" for
+"Proofs"; a bibliometric one swaps "Architectures" for "Search protocol".
 
 ---
 
-## Estágio 3 — Revisão profunda em paralelo
+## Stage 2 — Adaptive budget
 
-Dispare **um subagente por segmento**, todos na mesma mensagem para rodarem em paralelo. Use `subagent_type: general-purpose` com o `model` definido no Estágio 2.
+Assign each segment an effort tier according to the density of verifiable
+claims. This is what PAT calls Light/Medium/High Thinking.
 
-Cada prompt de revisor deve conter, sem exceção:
+- **HIGH** — wherever an error invalidates the paper. Metric definitions, proofs,
+  statistical protocol, results tables, any number appearing in more than one
+  place. These segments go to reviewers with `model: opus` and an explicit
+  instruction to reason line by line.
+- **MEDIUM** — method, data, experimental configuration, discussion.
+  `model: opus`, normal verification.
+- **LOW** — framing, related work, acknowledgements and declarations.
+  `model: sonnet` is enough.
 
-1. **O manuscrito inteiro** (caminho do arquivo — o agente lê), com a instrução de que ele é contexto, não alvo.
-2. **O segmento designado**, por seção e faixa de linhas, como o único alvo de verificação.
-3. **SOMENTE LEITURA** — proibido usar Write, Edit ou NotebookEdit. O revisor relata, não conserta.
-4. Os caminhos dos insumos de verificação do Estágio 0.
-5. O contrato de achado abaixo.
-
-### Contrato de achado
-
-Todo achado devolvido precisa ter:
-
-- **Severidade** — `CRÍTICO` (invalida uma conclusão), `ALTO` (exige reescrita substantiva), `MÉDIO` (enfraquece o argumento ou a clareza), `BAIXO` (correção pontual).
-- **Localização** — arquivo e linha.
-- **Citação literal** do trecho problemático. Sem citação, o achado não existe.
-- **O defeito**, em uma frase.
-- **Confiança** — `CONFIRMADO` (verificado contra a fonte, os dados ou o `.bib`) ou `PLAUSÍVEL` (suspeita fundamentada, não verificada).
-- **O que teria de ser verdade para eu estar errado** — uma linha. Este campo é o que separa crítica útil de ruído.
-
-### O que caçar
-
-Genérico, em qualquer manuscrito:
-
-- **Consistência numérica cruzada.** Todo número do resumo, do corpo, das tabelas e das figuras precisa bater. Onde houver dados brutos no repositório, confira contra eles. É a classe de erro mais comum e a mais barata de detectar.
-- **Afirmação além da evidência.** Alegação causal sustentada por resultado correlacional; "demonstra" onde cabe "sugere"; generalização para além das condições testadas.
-- **Contribuição declarada vs. entregue.** Cada item da lista de contribuições tem seção correspondente que o cumpre?
-- **Perguntas de pesquisa órfãs.** Cada RQ é respondida explicitamente? Cada resposta remete a uma evidência específica?
-- **Referências.** Toda `\cite` tem entrada no `.bib`; toda entrada é citada; o trabalho citado sustenta o que o texto diz que ele sustenta. Sinalize entrada com cara de inventada (DOI ausente, autoria vaga, título genérico).
-- **Erros aritmeticamente pequenos e logicamente fatais** — sinal trocado, desigualdade invertida, erro de unidade, off-by-one, notação sobrecarregada. O PAT reporta que estes são o achado mais frequente e o mais subestimado.
-- **Limitação ausente.** Ameaça óbvia à validade que o texto não reconhece.
-- **Vazamento metodológico.** O instrumento de avaliação foi construído usando a coisa que ele avalia? Circularidade entre o que é medido e o que é usado para medir.
-- **Proveniência e licenciamento** de dados e corpora, quando o texto os descreve.
-
-### Guardas antialucinação
-
-O PAT documenta três modos de falha próprios. Instrua cada revisor contra os três:
-
-1. **Não alegue que algo está desatualizado** — data, versão, "estado da arte" — sem verificar. Se não deu para verificar, o achado é `PLAUSÍVEL` e vem redigido como pergunta.
-2. **Não invente referência, teorema ou trabalho relacionado.** Se citar literatura externa, tem de ser algo que o revisor consiga localizar.
-3. **Não declare um argumento incorreto por não tê-lo entendido.** Antes de marcar `CRÍTICO` em um raciocínio, o revisor deve reconstruir o argumento do autor com as próprias palavras e só então apontar onde ele quebra. Se a reconstrução não fecha, o achado vira `PLAUSÍVEL` com a dúvida explicitada.
-
-Nada de elogio. O relatório não tem seção de pontos fortes.
+Announce the segmentation and the budget to the user in a short table before
+dispatching. It is the last cheap chance to fix the cut.
 
 ---
 
-## Estágio 3.5 — Assinatura de linguagem automatizada
+## Stage 3 — Deep review in parallel
 
-Um revisor dedicado, sobre o **manuscrito inteiro**. Não é um segmento: os sinais
-abaixo são de **frequência**, e frequência só se mede no texto todo.
+Dispatch **one subagent per segment**, all in the same message so they run in
+parallel. Use `subagent_type: general-purpose` with the `model` set in Stage 2.
 
-### Escopo: só o manuscrito
+Every reviewer prompt must contain, without exception:
 
-Este estágio lê **o arquivo do manuscrito e nada mais**. Não abre o histórico do
-versionamento, não abre briefings, roteiros de redação ou notas internas do
-projeto, e não envia o texto para serviço externo.
+1. **The whole manuscript** (the file path; the agent reads it), with the
+   instruction that it is context, not target.
+2. **The assigned segment**, by section and line range, as the only verification
+   target.
+3. **READ ONLY** — Write, Edit and NotebookEdit are forbidden. The reviewer
+   reports; it does not fix.
+4. The paths to the verification inputs from Stage 0.
+5. The finding contract below.
 
-Três razões, e as três são de projeto, não de conveniência:
+### Finding contract
 
-1. **O parecerista só vê o manuscrito.** Se esta skill existe para antecipar o
-   parecer, ela tem de trabalhar com o que o parecerista enxerga. Achado que
-   depende de artefato interno não sobrevive à submissão.
-2. **A evidência interna é ambígua na origem.** Um briefing que catalogou os
-   vícios do próprio autor faz "o texto bate com o briefing" deixar de
-   distinguir hábito próprio de padrão importado. A evidência parece forte e não
-   é.
-3. **Não generaliza.** Um estágio que só funciona onde existe repositório e
-   briefing não é um estágio; é um acidente daquele projeto.
+Every returned finding must have:
 
-Há uma consequência disso, e ela é o ponto seguinte.
+- **Severity** — `CRITICAL` (invalidates a conclusion), `HIGH` (requires
+  substantive rewriting), `MEDIUM` (weakens the argument or clarity), `LOW`
+  (local correction).
+- **Location** — file and line.
+- **A literal quote** of the problematic passage. Without a quote, the finding
+  does not exist.
+- **The defect**, in one sentence.
+- **Confidence** — `CONFIRMED` (verified against the source, the data or the
+  `.bib`) or `PLAUSIBLE` (grounded suspicion, not verified).
+- **What would have to be true for this finding to be wrong** — one line. This
+  field is what separates useful criticism from noise.
 
-### A assimetria diagnóstica — a regra que rege este estágio
+### What to hunt
 
-Os critérios desta seção **não valem todos a mesma coisa**, e a diferença não é
-de importância: é de **custo de burlar**.
+Generic, in any manuscript:
 
-Contar conector e advérbio absolutista é barato de zerar. Uma busca-e-substitui
-de dez minutos limpa os dois sem tocar em uma linha de raciocínio. Logo:
+- **Cross-numeric consistency.** Every number in the abstract, the body, the
+  tables and the figures must agree. Where raw data exist in the repository,
+  check against them. This is the most common error class and the cheapest to
+  detect.
+- **Claims beyond the evidence.** A causal claim supported by a correlational
+  result; "demonstrates" where "suggests" belongs; generalization beyond the
+  tested conditions.
+- **Claimed versus delivered contributions.** Does each item in the contribution
+  list have a corresponding section that fulfils it?
+- **Orphan research questions.** Is each RQ answered explicitly? Does each answer
+  point to specific evidence?
+- **References.** Every `\cite` has an entry in the `.bib`; every entry is cited;
+  the cited work supports what the text says it supports. Flag entries that look
+  fabricated (missing DOI, vague authorship, generic title).
+- **Arithmetically small and logically fatal errors** — flipped sign, inverted
+  inequality, unit error, off-by-one, overloaded notation. PAT reports these as
+  the most frequent and most underestimated finding.
+- **Missing limitation.** An obvious threat to validity the text does not
+  acknowledge.
+- **Methodological leakage.** Was the evaluation instrument built using the thing
+  it evaluates? Circularity between what is measured and what is used to measure.
+- **Provenance and licensing** of data and corpora, when the text describes them.
 
-> **Critério raspável só informa quando dispara. Quando passa, não informa nada.**
+### Anti-hallucination guards
 
-Isso é obrigatório no relatório. Um manuscrito com 0,3 conector por parágrafo
-pode ser um texto bem escrito ou um texto raspado na véspera, e a contagem não
-separa os dois. Reportar "quatro dos seis critérios não disparam" como se fosse
-boa notícia emite um **atestado de limpeza que o instrumento não pode dar** — e é
-pior do que não medir, porque tranquiliza.
+PAT documents three failure modes of its own. Instruct every reviewer against all
+three:
 
-Redija sempre assim: *"Critérios 1 e 3 não disparam. São raspáveis por
-busca-e-substitui e, portanto, **não-diagnósticos quando passam**: a contagem
-baixa não licencia nenhuma inferência."*
+1. **Do not claim something is outdated** — a date, a version, "state of the art"
+   — without checking. If it could not be checked, the finding is `PLAUSIBLE` and
+   is phrased as a question.
+2. **Do not invent a reference, theorem or related work.** If external literature
+   is cited, it must be something the reviewer can locate.
+3. **Do not declare an argument incorrect for having failed to understand it.**
+   Before marking a piece of reasoning `CRITICAL`, the reviewer must reconstruct
+   the author's argument in their own words and only then point to where it
+   breaks. If the reconstruction does not close, the finding becomes `PLAUSIBLE`
+   with the doubt made explicit.
 
-### Faixa A — raspáveis (contam só se dispararem)
+No praise. The report has no strengths section.
 
-| # | Critério | Alerta |
+---
+
+## Stage 3.5 — Automated language signature
+
+One dedicated reviewer, over the **whole manuscript**. This is not a segment: the
+signals below are signals of **frequency**, and frequency is only measurable
+across the entire text.
+
+### Scope: the manuscript and nothing else
+
+This stage reads **the manuscript file and nothing else**. It does not open
+version history, briefings, writing plans or internal project notes, and it does
+not send the text to an external service.
+
+Three reasons, all of them design rather than convenience:
+
+1. **The referee sees only the manuscript.** If this skill exists to anticipate
+   the referee, it has to work with what the referee sees. A finding that depends
+   on an internal artifact does not survive submission.
+2. **Internal evidence is ambiguous in origin.** A briefing that catalogued the
+   author's own tics makes "the text matches the briefing" stop distinguishing a
+   personal habit from an imported pattern. The evidence looks strong and is not.
+3. **It does not generalize.** A stage that only works where a repository and a
+   briefing exist is not a stage; it is an accident of that project.
+
+There is a consequence, and it is the next point.
+
+### The diagnostic asymmetry — the rule that governs this stage
+
+The criteria in this section **are not worth the same**, and the difference is
+not one of importance: it is one of **cost of evasion**.
+
+Counting connectives and absolutist adverbs is cheap to zero out. A ten-minute
+find-and-replace clears both without touching a line of reasoning. Therefore:
+
+> **A scrubbable criterion informs only when it fires. When it passes, it informs
+> nothing.**
+
+This is mandatory in the report. A manuscript with 0.3 connectives per paragraph
+may be a well-written text or a text scrubbed the night before, and the count
+does not separate the two. Reporting "four of six criteria did not fire" as good
+news issues a **certificate of cleanliness the instrument cannot give**, and that
+is worse than not measuring, because it reassures.
+
+Always phrase it like this: *"Criteria 1 and 3 do not fire. They are removable by
+find-and-replace and are therefore **non-diagnostic when they pass**: the low
+count licenses no inference."*
+
+### Band A — scrubbable (count only when they fire)
+
+| # | Criterion | Alert |
 |---|---|---|
-| A1 | Conectores encabeçando frase (*além disso, contudo, entretanto, portanto, vale destacar, em outras palavras, isso significa que, em conclusão*) | acima de **0,38 por parágrafo** |
-| A2 | Absolutismo lexical (*sempre, nunca, claramente, obviamente, sem dúvida, evidentemente*) | acima de **1,9 por 1.000 palavras** |
-| A3 | Travessão longo (—) em excesso | — |
+| A1 | Sentence-opening connectives (*moreover, however, therefore, furthermore, it is worth noting, in other words, this means that, in conclusion*) | above **0.48 per paragraph** |
+| A2 | Lexical absolutism (*always, never, clearly, obviously, undoubtedly, evidently*) | above **2.3 per 1,000 words** |
+| A3 | Long dashes in excess | any density above the human baseline |
 
-> **De onde vêm estes limiares.** Foram calibrados contra 36 artigos integrais
-> em PT-BR do SciELO publicados até 2019, no percentil 95 da escrita humana. As
-> versões anteriores eram afirmadas a partir de uso e estavam erradas por até uma
-> ordem de grandeza: A1 alertava acima de 4 por parágrafo quando texto acadêmico
-> real, humano e de máquina, roda em 0,2 a 0,4. Aquele limiar nunca disparava.
+> **Where these thresholds come from.** They were calibrated against 76 full-text
+> Brazilian Portuguese articles from SciELO published up to 2019, at the 95th
+> percentile of human writing. Earlier versions were asserted from practice and
+> were wrong by up to a factor of eight: A1 alerted above 4 per paragraph when
+> real academic text, human and machine alike, runs at 0.2 to 0.4. That threshold
+> never fired.
 >
-> A calibração é específica desse corpus. Aplicá-la a outra língua, gênero ou
-> área é extrapolação não medida, e vale recalibrar antes de confiar.
+> The calibration is specific to that corpus. Applying it to another language,
+> genre or field is unmeasured extrapolation, and recalibrating first is worth
+> the effort.
 
-Se dispararem, são achados normais, com contagem e trecho. Se não dispararem,
-**uma linha dizendo que são não-diagnósticos, e nada mais**. Não os liste como
-"verificado e limpo".
+If they fire, they are ordinary findings, with a count and a quoted passage. If
+they do not fire, **one line saying they are non-diagnostic, and nothing else**.
+Do not list them as "checked and clean".
 
-Sub-achado que a Faixa A não pega e que costuma sobreviver à raspagem:
-**intensificador sem lastro** (*expressivo, substancialmente, consistentemente,
-sistematicamente, altamente*). Quem raspa absolutismo raramente raspa isto. Conte
-e separe os que têm um número por trás dos que só enfatizam.
+A sub-finding Band A misses, and which usually survives scrubbing: **unsupported
+intensifiers** (*significantly, substantially, consistently, systematically,
+highly*). Whoever scrubs absolutism rarely scrubs these. Count them and separate
+the ones with a number behind them from the ones that merely emphasize.
 
-### Faixa B — resistentes (o peso do estágio)
+### Language dependence, measured
 
-Nenhum destes se remove com busca-e-substitui. Todos exigem reescrever. São, por
-isso, os únicos que carregam informação de verdade.
+**Band A criteria are language-specific, and running them on the wrong language
+measures nothing at all.** Running Portuguese lexicons over an English corpus
+returned an AUC of exactly 0.500 on five criteria: every text scored zero and all
+of them tied.
 
-| # | Critério | Como medir | Alerta |
+This holds for any detector resting on a word list, and it is rarely declared.
+Lexicons for both languages ship with this skill; see
+[`references/lexicons-en.md`](references/lexicons-en.md) and
+[`references/lexicons-pt.md`](references/lexicons-pt.md). Use the one that matches
+the manuscript.
+
+A3 (long dashes) and the length-derived and n-gram criteria are
+language-independent and transfer without adaptation.
+
+### Band B — resistant (the weight of this stage)
+
+None of these can be removed by find-and-replace. All require rewriting. They
+are, for that reason, the only ones carrying real information.
+
+| # | Criterion | How to measure | Alert |
 |---|---|---|---|
-| B1 | **Simetria de template** | coeficiente de variação do tamanho dos parágrafos, global **e por bloco de seção** | CV abaixo de 33% |
-| B2 | **Redundância semântica** | n-gramas de 8+ palavras repetidos; mesma proposição em pontos distantes | qualquer cadeia |
-| B3 | **Tautologia definicional** | achado que a regra de classificação **garante por construção** | qualquer ocorrência |
-| B4 | **Hipotaxe inflacionada** | distribuição do comprimento de sentença, com atenção à cauda | sentenças acima de ~60 palavras |
-| B5 | **Frame retórico único** | contagem do modo *default* de afirmar (*X, e não Y*; *não apenas… mas também*; *ao passo que*) | frame dominante em **>5,7%** dos parágrafos |
-| B6 | **Voz autoral ausente** | **leitura humana; não automatizar** | sem limiar — ver abaixo |
-| B7 | **Conclusão tautológica** | sobreposição da conclusão com o corpo, mais leitura direta | qualquer ocorrência |
-| B8 | **Ritmo robótico** | mesma medida de B4, outra cauda: sujeito + verbo + complemento em cadeia | CV do comprimento de sentença abaixo de 43% |
-| B9 | **Ilusão de profundidade** | reformulação para ganhar volume; metáfora genérica no lugar de análise; afirmação autoevidente vendida como implicação | qualquer ocorrência |
+| B1 | **Template symmetry** | coefficient of variation of paragraph length, global **and per section block** | CV below 34% |
+| B2 | **Semantic redundancy** | repeated n-grams of 8+ words; the same proposition at distant points | any chain |
+| B3 | **Definitional tautology** | a finding the classification rule **guarantees by construction** | any occurrence |
+| B4 | **Inflated hypotaxis** | distribution of sentence length, watching the tail | sentences above ~60 words |
+| B5 | **Single rhetorical frame** | count of the *default* mode of asserting (*X, and not Y*; *not only… but also*; *whereas*) | dominant frame in **>7.0%** of paragraphs |
+| B6 | **Absent authorial voice** | **human reading; do not automate** | no threshold — see below |
+| B7 | **Tautological conclusion** | overlap of the conclusion with the body, plus direct reading | any occurrence |
+| B8 | **Robotic rhythm** | same measurement as B4, other tail: subject + verb + complement in a chain | CV of sentence length below 43% |
+| B9 | **Illusion of depth** | restatement to gain volume; a generic metaphor in place of analysis; a self-evident claim sold as an implication | any occurrence |
 
-**B4 e B8 são a mesma medição, lida nas duas pontas.** Calcule uma vez a
-distribuição do comprimento de sentença: CV baixo acusa B8, cauda longa acusa
-B4. Um manuscrito raramente tem os dois.
+**B4 and B8 are the same measurement read from both ends.** Compute the
+distribution of sentence length once: a low CV accuses B8, a long tail accuses
+B4. A manuscript rarely has both.
 
-Quatro notas de medição, aprendidas em uso:
+Four measurement notes, learned in use:
 
-- **B1 mede por bloco, não só global.** Um CV global saudável esconde uma seção
-  de quatro parágrafos com CV de 4% — que é exatamente onde o leitor aprende o
-  formulário e para de ler. Reporte o pior bloco, não a média.
-- **B3 é o achado mais grave que este estágio produz, e não é defeito de estilo.**
-  Quando o texto define uma categoria e depois apresenta como descoberta um
-  padrão que a definição garante, isso é **problema de validade**. Um parecerista
-  atento aponta. Marque como `CRÍTICO` e mande para o Estágio 4 verificar.
-- **B6 não deve ser automatizado. Isto foi medido, não estimado.** Uma versão
-  anterior desta skill dizia que o proxy por expressão regular super-marcava em
-  15 a 25 pontos percentuais e recomendava usá-lo para *localizar* parágrafos.
-  Medimos: contra um leitor independente e cego, em amostra estratificada de 154
-  parágrafos de artigos humanos, a concordância foi de **49,4%**. Para julgamento
-  binário isso é o acaso, e a discordância é bidirecional (60,0% num sentido,
-  40,5% no outro), que é a assinatura de duas medidas não relacionadas.
+- **B1 measures per block, not only globally.** A healthy global CV hides a
+  four-paragraph section with a CV of 4%, which is exactly where the reader
+  learns the formula and stops reading. Report the worst block, not the average.
+- **B3 is the most serious finding this stage produces, and it is not a style
+  defect.** When a text defines a category and then presents as a discovery a
+  pattern the definition guarantees, that is a **validity problem**. An attentive
+  referee will catch it. Mark it `CRITICAL` and send it to Stage 4 for
+  verification.
+- **B6 must not be automated. This was measured, not estimated.** An earlier
+  version of this skill said the regular-expression proxy over-marked by 15 to 25
+  percentage points and recommended using it to *locate* paragraphs. We measured
+  it: against an independent blind reader, on a stratified sample of 154
+  paragraphs from human articles, agreement was **49.4%**. For a binary judgement
+  that is chance, and the disagreement is bidirectional (60.0% in one direction,
+  40.5% in the other), which is the signature of two unrelated measures.
 
-  Localizar ao acaso é sortear, então nem a recomendação atenuada se sustenta.
-  **B6 permanece como critério; o que se retira é a automação dele.** Leia os
-  parágrafos e julgue se o autor se posiciona ou apenas relata.
+  Locating at chance is drawing lots, so not even the weakened recommendation
+  holds. **B6 remains a criterion; what is withdrawn is its automation.** Read the
+  paragraphs and judge whether the author takes a position or merely reports.
 
-  Ressalva da própria validação: o leitor independente é um modelo, não uma
-  pessoa. Isso sustenta que as duas medidas discordam, não qual delas acerta.
+  A caveat on the validation itself: the independent reader is a model, not a
+  person. That supports the claim that the two measures disagree, not which of
+  them is right.
 
-### O enquadramento honesto, que vai no relatório
+### The honest framing, which goes in the report
 
-Estes marcadores **não provam autoria por IA**. Um humano apressado produz todos
-eles; um texto assistido e bem revisado não produz nenhum. O que eles medem de
-fato é **escrita fraca**: previsibilidade estrutural, ênfase artificial e
-afirmação sem lastro. Reporte-os como defeito de redação, que é o que se
-sustenta, e não como acusação de autoria, que não se sustenta.
+These markers **do not prove AI authorship**. A rushed human produces all of
+them; a well-revised assisted text produces none. What they actually measure is
+**weak writing**: structural predictability, artificial emphasis and claims
+without backing. Report them as writing defects, which is what holds up, and not
+as an accusation of authorship, which does not.
 
-Isso é o que torna o achado acionável: "cinco conectores neste parágrafo" é
-corrigível e indiscutível; "provavelmente escrito por IA" é indefensável e
-ofensivo se errado.
+That is what makes the finding actionable: "five connectives in this paragraph"
+is fixable and indisputable; "probably written by AI" is indefensible and
+offensive if wrong.
 
-### Prioridade: o que vai ser reescrito de qualquer jeito
+### Priority: what will be rewritten anyway
 
-Se o usuário já sabe que certas seções serão reescritas, peça a lista antes de
-disparar e **separe os achados em dois grupos**:
+If the user already knows certain sections will be rewritten, ask for the list
+before dispatching and **split the findings into two groups**:
 
-- **Corrigir** — o que está em seção que sobrevive. Exige ação.
-- **Evitar na escrita nova** — o que está em seção condenada. Não vale corrigir;
-  vale como padrão a não repetir no texto que vem.
+- **Fix** — what sits in a section that survives. Requires action.
+- **Avoid in the new writing** — what sits in a section already condemned. Not
+  worth fixing; worth keeping as a pattern not to repeat in the text to come.
 
-Sem essa separação o relatório manda reescrever o que já ia ser reescrito, e o
-usuário gasta atenção à toa.
+Without that split, the report tells the user to rewrite what was going to be
+rewritten anyway, and they spend attention for nothing.
 
-### Três coisas que esta skill deliberadamente não faz
+### Three things this skill deliberately does not do
 
-**Não emite uma porcentagem única de probabilidade.** Somar notas de critérios e
-multiplicar por uma constante produz um número de aparência científica sem
-validação por trás: não há calibração contra corpus rotulado, os critérios não
-são independentes, e o resultado varia com o revisor. Reporte as contagens
-contra os limiares e deixe o leitor concluir. Se o usuário pedir explicitamente
-o número composto, entregue — e registre no relatório que ele não é uma
-probabilidade calibrada.
+**It does not emit a single probability percentage.** Summing criterion scores
+and multiplying by a constant produces a scientific-looking number with no
+validation behind it: there is no calibration against a labelled corpus, the
+criteria are not independent, and the result varies with the reviewer. Report the
+counts against the thresholds and let the reader conclude. If the user explicitly
+asks for the composite number, deliver it, and record in the report that it is
+not a calibrated probability.
 
-**Não cola o manuscrito em serviço de terceiros.** Enviar trabalho não publicado
-para uma API externa o expõe: pode ser retido, cacheado ou indexado, e em
-submissão sob revisão cega isso é um problema real. A varredura roda localmente,
-sobre o arquivo. Se o usuário quiser usar um detector externo, é decisão dele — e
-vale avisar antes que a decisão está sendo tomada.
+**It does not paste the manuscript into a third-party service.** Sending
+unpublished work to an external API exposes it: it may be retained, cached or
+indexed, and under blind review that is a real problem. The scan runs locally,
+over the file. If the user wants to use an external detector, that is their
+decision, and it is worth warning them before the decision is made.
 
-**Não audita conduta.** Este estágio diagnostica **o texto**. Não infere quem
-escreveu, não avalia se a declaração de uso de IA do manuscrito é suficiente, e
-não cruza o texto com o histórico do projeto para levantar essa pergunta. É uma
-questão real e é do autor, mas é de outra natureza — sai de "a redação tem estes
-defeitos" e entra em "a conduta declarada tem esta lacuna", sem que o usuário
-tenha pedido a segunda. Se o usuário quiser essa análise, ela se pede
-explicitamente e roda separada.
+**It does not audit conduct.** This stage diagnoses **the text**. It does not
+infer who wrote it, does not evaluate whether the manuscript's AI-use declaration
+is sufficient, and does not cross the text with project history to raise that
+question. It is a real question and it belongs to the author, but it is of a
+different nature: it moves from "the writing has these defects" to "the declared
+conduct has this gap", which the user did not ask for. If the user wants that
+analysis, it is requested explicitly and runs separately.
 
 ---
 
-## Estágio 4 — Síntese global
+## Stage 4 — Global synthesis
 
-Feito por você, no contexto principal, depois que todos os revisores voltarem.
+Done by you, in the main context, after all reviewers return.
 
-1. **Deduplique.** O mesmo defeito visto de dois segmentos vira um achado, com as duas localizações.
-2. **Derrube o infundado.** Achado sem citação literal, ou cuja citação não confere com o texto real, é descartado — não rebaixado, descartado. Abra o arquivo e confirme por amostragem os achados `CRÍTICO` e `ALTO`.
-3. **Verifique a fundamentação.** Para achados que dependem de fato externo (uma referência existe? um número bate com os dados?), confirme você mesmo antes de reportar. Use WebSearch para literatura, leitura de arquivo para dados. Isto é o `search grounding` do PAT.
-4. **Reordene por severidade real**, não pela ordem dos segmentos.
-5. **Separe erro de melhoria.** Duas listas distintas: o que está errado e o que ficaria melhor.
+1. **Deduplicate.** The same defect seen from two segments becomes one finding,
+   with both locations.
+2. **Drop the unfounded.** A finding without a literal quote, or whose quote does
+   not match the real text, is discarded, not downgraded. Open the file and
+   confirm the `CRITICAL` and `HIGH` findings by sampling.
+3. **Verify the grounding.** For findings that depend on an external fact (does a
+   reference exist? does a number match the data?), confirm it yourself before
+   reporting. Use WebSearch for literature and file reading for data. This is
+   PAT's `search grounding`.
+4. **Reorder by real severity**, not by segment order.
+5. **Separate error from improvement.** Two distinct lists: what is wrong and what
+   would be better.
 
-### Saída
+### Output
 
-Grave em `revisoes/revisao_<nome-do-manuscrito>_<AAAA-MM-DD>.md`, ao lado do manuscrito, e resuma no chat apenas os `CRÍTICO` e `ALTO`.
+Write to `reviews/review_<manuscript-name>_<YYYY-MM-DD>.md`, next to the
+manuscript, and summarize in chat only the `CRITICAL` and `HIGH` findings.
 
 ```markdown
-# Revisão pré-submissão — <manuscrito>
-<data> · <N> segmentos · <N> revisores · <N> achados após deduplicação
+# Pre-submission review — <manuscript>
+<date> · <N> segments · <N> reviewers · <N> findings after deduplication
 
-## Veredito
-<2-4 frases: o que impede a submissão hoje, se algo impede.>
+## Verdict
+<2-4 sentences: what blocks submission today, if anything does.>
 
-## Erros
-### [CRÍTICO] <título curto>
-**Onde:** arquivo:linha
-**Texto:** "<citação literal>"
-**Defeito:** <uma frase>
-**Confiança:** CONFIRMADO — <como foi verificado>
-**Eu estaria errado se:** <uma linha>
-**Correção sugerida:** <acionável>
+## Errors
+### [CRITICAL] <short title>
+**Where:** file:line
+**Text:** "<literal quote>"
+**Defect:** <one sentence>
+**Confidence:** CONFIRMED — <how it was verified>
+**I would be wrong if:** <one line>
+**Suggested fix:** <actionable>
 
-## Melhorias
-<mesma estrutura, sem severidade>
+## Improvements
+<same structure, without severity>
 
-## Verificado e limpo
-<lista curta do que foi checado e não apresentou problema — números conferidos contra dados, citações batidas contra o .bib. Serve para o usuário saber o que NÃO precisa reconferir à mão.>
+## Checked and clean
+<short list of what was checked and showed no problem: numbers verified against
+data, citations matched against the .bib. This tells the user what they do NOT
+need to re-check by hand.>
 ```
 
 ---
 
-## Notas de operação
+## Operating notes
 
-- Manuscrito curto (< ~15 páginas) pode ir com 4-5 segmentos. Tese ou artigo longo pede 8-10.
-- Se o usuário pedir foco (`só a estatística`), reduza os segmentos ao escopo pedido e diga explicitamente no relatório o que ficou de fora.
-- Se houver auditoria anterior, o relatório precisa dizer quais achados são **novos** e quais **reincidem**.
-- Rodar de novo depois das correções é barato e é o uso pretendido. O PAT deu uma rodada por manuscrito; esta skill não tem esse limite.
+- A short manuscript (under ~15 pages) can go with 4 or 5 segments. A thesis or a
+  long paper asks for 8 to 10.
+- If the user asks for focus (`only the statistics`), reduce the segments to the
+  requested scope and say explicitly in the report what was left out.
+- If there is a previous audit, the report must say which findings are **new** and
+  which **recur**.
+- Re-running after fixes is cheap and is the intended use. PAT gave one pass per
+  manuscript; this skill has no such limit.
