@@ -96,6 +96,11 @@ dispatching. It is the last cheap chance to fix the cut.
 Dispatch **one subagent per segment**, all in the same message so they run in
 parallel. Use `subagent_type: general-purpose` with the `model` set in Stage 2.
 
+The list below goes into every prompt **in full** — not summarized, and never
+assumed to be inherited from your context. That is deliberate: an instruction
+sitting next to the task is followed, while the same instruction far upstream of
+it decays as the session grows.
+
 Every reviewer prompt must contain, without exception:
 
 1. **The whole manuscript** (the file path; the agent reads it), with the

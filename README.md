@@ -114,6 +114,22 @@ detection.
 
 These skills reimplement that architecture on Claude Code subagents.
 
+There is a second argument for the same architecture, independent of PAT and
+mechanical rather than empirical. Transformer attention is strongest at the
+beginning and the end of a context and weakest in between (Liu et al., 2024);
+adherence to a system message decays over conversation turns (Qin et al., 2024);
+in long multi-turn settings models lose an average of 39% against their own
+single-turn performance on identical tasks (Laban et al., 2025); and
+instruction-following degrades as simultaneous instructions accumulate
+(Jaroslawicz et al., 2025). A reviewer subagent inverts all four at once: a fresh
+context, a single target, and its rules delivered adjacent to the task instead of
+upstream of a long session.
+
+That is also why both skills paste their contracts verbatim into every subagent
+rather than assuming inheritance — the reviewer its finding contract and
+anti-hallucination guards, the writer its four grounding rules. Where an
+instruction sits is part of whether it is followed.
+
 ---
 
 ## `paper-reviewer`
@@ -274,6 +290,16 @@ endorsed by Google or Anthropic.
 
 Stage 3.5 of `paper-reviewer` and the grounding contract of `paper-writer` are
 original to this repository.
+
+The positional argument in [Why segmentation](#why-segmentation) is drawn from
+the literature review in:
+
+> Yin, L., Li, Z., Shi, Z., Zhang, H., Seong, H., & Wang, Z. (2026). *@skills:
+> Attention Is All You Have.* arXiv:2608.12610.
+
+That paper also argues a delivery protocol; this repository documents its
+reference syntax above but does not depend on it. The positional-attention
+evidence it collects stands on its own primary sources.
 
 ## How to cite
 
