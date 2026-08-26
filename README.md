@@ -18,6 +18,26 @@ full-text human articles published before 2020. The previous asserted values wer
 wrong by up to a factor of eight, and one criterion had its automation withdrawn
 after failing validation. See [Measured, not asserted](#measured-not-asserted).
 
+## Getting it
+
+### Try one without installing
+
+```bash
+npx -y skills use whoisraibolt/paper-skills --skill paper-reviewer --agent claude-code
+```
+
+Resolves the skill into a temporary directory, hands it to the agent for that
+session, and leaves nothing behind — nothing written to `.claude/`, nothing
+occupying your system prompt afterwards. Drop `--agent claude-code` to print the
+generated prompt to stdout and pipe it wherever you like.
+
+This is the honest default for a reviewer. You know when you are reviewing a
+manuscript, so there is nothing to gain from a skill that fires unasked, and an
+installed skill's description is paid on every message of every session, whether
+or not you are anywhere near a paper.
+
+### Install, if you reach for it often
+
 ```bash
 npx -y skills add whoisraibolt/paper-skills --skill paper-reviewer --agent claude-code
 npx -y skills add whoisraibolt/paper-skills --skill paper-writer   --agent claude-code
@@ -25,6 +45,22 @@ npx -y skills add whoisraibolt/paper-skills --skill paper-writer   --agent claud
 
 Installs into `.claude/skills/` of the current project. Add `--global` to install
 for all projects.
+
+### By reference, with no installer at all
+
+The repository is a plain skill tree, so an agent that resolves paths can read
+either skill straight from GitHub with no package step:
+
+```
+@skills:gh:whoisraibolt/paper-skills/skills/paper-reviewer
+@skills:gh:whoisraibolt/paper-skills/skills          # both, as a two-line menu
+```
+
+That syntax is the `@skills` protocol (Yin et al., 2026, arXiv:2608.12610), a
+proposal rather than an adopted standard — Claude Code does not implement it
+natively today. It is documented here because it costs this repository nothing:
+the tree already answers those paths, and `git clone` plus a file read works with
+or without any protocol at all.
 
 ---
 
