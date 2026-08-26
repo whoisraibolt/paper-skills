@@ -131,6 +131,11 @@ text produces none. What they actually measure is weak writing, meaning
 structural predictability, artificial emphasis, and claims without backing. That
 is what holds up, and it is also what is actionable.
 
+The instrument itself — both bands, the calibrated thresholds, the measurement
+notes and the three refusals — is in
+[`references/stage-3-5-language-signature.md`](skills/paper-reviewer/references/stage-3-5-language-signature.md),
+loaded by the Stage 3.5 reviewer at dispatch rather than carried in `SKILL.md`.
+
 ### Measured, not asserted
 
 Most skills of this kind ship thresholds someone picked by intuition. These were
