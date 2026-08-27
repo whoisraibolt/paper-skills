@@ -95,6 +95,8 @@ Anuncie a segmentação e o orçamento antes de disparar — última chance de c
 
 Dispare **um subagente por segmento**, todos na mesma mensagem. `subagent_type: general-purpose`, `model` do Estágio 2.
 
+A lista abaixo vai **inteira** em cada prompt — não resumida, e nunca supondo que o subagente herda o seu contexto. Isso é deliberado: instrução colada na tarefa é seguida, enquanto a mesma instrução lá atrás, numa sessão longa, decai.
+
 Cada prompt de redator deve conter, sem exceção:
 
 1. **O manuscrito inteiro** (caminho do arquivo, se existir), como contexto de voz e terminologia — não para copiar, para não destoar.

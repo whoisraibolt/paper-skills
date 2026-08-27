@@ -1,6 +1,6 @@
 ---
 name: paper-reviewer
-description: Deep pre-submission review of a scientific manuscript, modeled on Google's Paper Assistant Tool (PAT). Segments the manuscript, allocates a reasoning budget per segment, dispatches deep reviewers in parallel (each with the full text as context), and consolidates into a single report with severity, quoted evidence, and anti-hallucination checks. Use when asked to review, audit, critique, or validate a paper, thesis, dissertation, chapter, or proposal before submission. Accepts .tex, .md, .pdf, and .docx. Works in English and Brazilian Portuguese.
+description: Deep pre-submission review of a scientific manuscript, modeled on Google's Paper Assistant Tool (PAT). Segments the manuscript, allocates a reasoning budget per segment, dispatches deep reviewers in parallel (each with the full text as context), and consolidates into a single report with severity, quoted evidence, and anti-hallucination checks. Use when asked to review, audit, critique, or validate a paper, thesis, dissertation, chapter, or proposal before submission. Works in English and Brazilian Portuguese.
 license: MIT
 ---
 
@@ -32,9 +32,10 @@ design; whoever writes does not approve their own text in the same context.
    manuscript in the current directory (a `.tex` with `\documentclass`, or a long
    `.md`) and **confirm with the user before spending agents** if there is more
    than one candidate.
-2. **Always prefer source over PDF.** PAT lists PDF parsing failure among its
-   three most reported limitations. If a `.tex` or `.md` exists, use it and ignore
-   the compiled PDF.
+2. **Accepted formats are `.tex`, `.md`, `.pdf` and `.docx`, and source beats the
+   rest.** PAT lists PDF parsing failure among its three most reported
+   limitations, and a `.docx` costs a conversion the source does not. If a `.tex`
+   or `.md` exists, use it and ignore the compiled PDF.
 3. Read the **whole** manuscript before segmenting. Without that, the
    segmentation comes out wrong.
 4. Locate verification inputs, if they exist:
