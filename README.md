@@ -183,6 +183,19 @@ text produces none. What they actually measure is weak writing, meaning
 structural predictability, artificial emphasis, and claims without backing. That
 is what holds up, and it is also what is actionable.
 
+**Three instruments, routinely confused.** Since August 2026 Anthropic weaves a
+keyed watermark into Claude's text output, and the coverage has collapsed three
+unrelated things into one. This skill reads a *stylistic signature*: the text
+itself, no key and no vendor involved, and what it finds is weak writing. A
+*cryptographic watermark* is the vendor's, readable only with the vendor's key,
+and it answers one narrow question — was that vendor's model likely involved at
+some point. A *commercial detector*, the kind committees buy, reads style and
+never reads the watermark at all; it returns an uncalibrated percentage. What the
+three share is the part nobody says out loud: **none of them certifies anything
+when it passes.** A quiet scan, an undetected watermark and a low score are three
+different ways of failing to find something, and failing to find something is not
+evidence that a human wrote it. Same asymmetry as above, one level up.
+
 The instrument itself — both bands, the calibrated thresholds, the measurement
 notes and the three refusals — is in
 [`references/stage-3-5-language-signature.md`](skills/paper-reviewer/references/stage-3-5-language-signature.md),
