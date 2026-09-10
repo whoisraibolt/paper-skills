@@ -1,10 +1,12 @@
 # Revisão pré-submissão — manuscrito-exemplo.md
 
-2026-08-17 · 5 segmentos · 5 revisores + 1 de assinatura de linguagem · 9 achados após deduplicação
+2026-08-18 · 5 segmentos · 5 revisores + 1 de assinatura de linguagem · 9 achados após deduplicação
 
 > Relatório produzido pelo `paper-reviewer` sobre [`manuscrito-exemplo.md`](manuscrito-exemplo.md),
 > um manuscrito **sintético** com defeitos plantados. Os números do Estágio 3.5
-> são medidos, não ilustrativos.
+> são medidos contra os limiares calibrados da skill (SciELO PT-BR até 2019,
+> percentil 95), não contra os limiares anteriores à correção. B6 é leitura,
+> não proxy.
 
 ## Veredito
 
@@ -146,50 +148,78 @@ entre as arquiteturas.
 
 ## Estágio 3.5 — Assinatura de linguagem automatizada
 
-Medido sobre o manuscrito inteiro: 767 palavras, 40 sentenças, 21 parágrafos.
+Medido sobre o manuscrito a partir de `## Resumo` (o aviso de síntese no topo
+não entra): 659 palavras, 42 sentenças, 18 parágrafos de prosa. A lista PP foi
+fundida ao parágrafo que a introduz. Palavra = token alfanumérico.
 
 ### Faixa A — raspáveis
 
 | Critério | Medido | Limiar | Dispara |
 |---|---|---|---|
-| A1 conectores encabeçando frase | 10 no total, máx. 4 por parágrafo | > 4 por parágrafo | não |
-| A2 absolutismo lexical | 3,91 por 1.000 palavras | 8,57 | não |
-| A3 travessão longo | 0 | > 0 | não |
+| A1 conectores encabeçando frase | 9 no total, 0,50 por parágrafo; máx. 4 no resumo | > 0,38 por parágrafo | **sim** |
+| A2 absolutismo lexical | 3 ocorrências, 4,55 por 1.000 palavras | > 1,9 / 1.000 pal. | **sim** |
+| A3 travessão longo | 0 | — | não |
 
-**A1, A2 e A3 não disparam. São raspáveis por busca-e-substitui e, portanto,
-não-diagnósticos quando passam: a contagem baixa não licencia nenhuma
-inferência.** Um texto com estes três limpos pode ser bem escrito ou ter sido
-raspado na véspera, e a medição não separa os dois casos.
+**A1 dispara.** Nove sentenças abrem com conector da lista da skill
+(*contudo, além disso, vale destacar, portanto, entretanto, em outras
+palavras, isso significa que*). Quatro delas estão no mesmo parágrafo — o
+resumo, linhas 11–19. A taxa 0,50 por parágrafo fica acima de 0,38 mesmo se
+cada PP contar como parágrafo à parte (9/21 ≈ 0,43). Com o limiar antigo
+(> 4 por parágrafo) isto nunca dispararia: o máximo observado é 4, e texto
+acadêmico real roda em 0,2 a 0,4.
 
-Sub-achado que a Faixa A não pega: **4 intensificadores, 3 deles sem lastro
-numérico** (*amplamente* ×2, *sistematicamente*, *substancialmente*). Quem raspa
-absolutismo raramente raspa isto.
+**A2 dispara.** *sempre* (linha 19), *claramente* (linhas 18 e 112). 4,55 por
+1.000 palavras contra 1,9. O denominador antigo (767 palavras → 3,91 / 1.000)
+também ultrapassa o limiar calibrado.
+
+**A3 não dispara.** É raspável por busca-e-substitui e, portanto,
+**não-diagnóstico quando passa**: a contagem baixa não licencia nenhuma
+inferência.
+
+Sub-achado que a Faixa A não pega: **4 intensificadores, nenhum com lastro
+numérico na mesma frase** (*amplamente* ×2, *sistematicamente*,
+*substancialmente*). Quem raspa absolutismo raramente raspa isto.
 
 ### Faixa B — resistentes
 
 | Critério | Medido | Limiar | Dispara |
 |---|---|---|---|
-| B1 simetria de template | CV 0,560 global; 0,455 no pior bloco (Introdução) | < 0,30 | não |
-| B2 redundância semântica | 3 cadeias de 8+ palavras repetidas | qualquer | **sim** |
-| B4 hipotaxe inflacionada | 0 sentenças acima de 60 palavras (máx. 59) | > 0 | não |
-| B5 frame retórico único | nenhum frame dominante | > 20% | não |
-| B6 voz autoral ausente | 81,0% dos parágrafos (17 de 21) | > 70% | **sim** |
-| B7 conclusão tautológica | 17,4% de sobreposição com o corpo | qualquer | **sim** |
-| B8 ritmo robótico | CV do comprimento de sentença 0,606 | < 0,30 | não |
+| B1 simetria de template | CV 0,53 global; pior bloco Discussão CV 0% (2 × 33 pal.); Método 3,7%; Relacionados 2,6% | < 33% | **sim** |
+| B2 redundância semântica | 1 cadeia de 10 palavras repetida | qualquer | **sim** |
+| B3 tautologia definicional | achado da Seção 4 garantido pela definição da Seção 3.3 | qualquer | **sim** — já no [CRÍTICO] |
+| B4 hipotaxe inflacionada | 0 sentenças acima de 60 palavras (máx. 28) | cauda ~60 | não |
+| B5 frame retórico único | nenhum frame da lista (*X, e não Y*; *não apenas… mas também*; *ao passo que*) | > 5,7% dos parágrafos | não |
+| B6 voz autoral ausente | leitura: posiciona em lacuna, contribuições e discussão; a conclusão não toma posição nova | sem limiar — não automatizar | **sim** |
+| B7 conclusão tautológica | a Seção 6 reformula o resumo; ver B2 | qualquer | **sim** |
+| B8 ritmo robótico | CV do comprimento de sentença 0,40 | < 43% | **sim** |
 
-**B2.** A cadeia mais longa repetida é *"os resultados demonstram que a
-arquitetura híbrida causa melhora significativa"*, presente no resumo (linha 15)
-e nas Considerações Finais (linha 117), praticamente idêntica. Note que esta
-cadeia contém o achado [ALTO] da alegação causal: o mesmo erro aparece duas
-vezes porque a conclusão foi copiada do resumo.
+**B1.** O CV global 0,53 é saudável e esconde o bloco. Discussão tem dois
+parágrafos de 33 palavras; Método, quatro parágrafos de 28–31; Trabalhos
+relacionados, 38 e 40. A skill pede o pior bloco, não a média.
 
-**B6.** 17 de 21 parágrafos relatam sem posicionar. **Este número é de proxy
-automático e super-marca**: a medição não reconhece posicionamento indireto. A
-diferença observada entre proxy e leitura humana é de 15 a 25 pontos
-percentuais. Use para localizar parágrafos, não para dar veredito.
+**B2.** A cadeia é *"os resultados demonstram que a arquitetura híbrida causa
+melhora significativa"*, no resumo (linha 15) e nas Considerações Finais
+(linha 117). Contém o achado [ALTO] da alegação causal: o mesmo erro aparece
+duas vezes porque a conclusão foi copiada do resumo. (Subcadeias de 8 e 9
+palavras da mesma sequência não são cadeias distintas.)
+
+**B3.** Já verificado no [CRÍTICO] do Estágio 4. Não é defeito de estilo: a
+partição por complexidade *é* densidade de entidades, e a Seção 4 apresenta
+essa consequência como descoberta.
+
+**B6.** Leitura dos 18 parágrafos, sem proxy. O autor posiciona em três
+lugares: a lista de contribuições, “esta lacuna motiva o presente trabalho”,
+e os dois parágrafos da discussão (hipótese de mecanismo). O restante relata.
+Relatar no método é adequado ao gênero; o vazio está no fechamento — a Seção 6
+não acrescenta posição à do resumo. Sem porcentagem: a skill retirou a
+automação deste critério porque a concordância do proxy com leitura cega foi
+o acaso (49,4%).
 
 **B7.** A conclusão reformula o resumo sem acrescentar leitura. Combinado com
 B2, indica que a Seção 6 foi construída por reciclagem em vez de síntese.
+
+**B8.** CV 0,40 contra 0,43 — dispara, perto do limiar. B4 não dispara (máximo
+28 palavras): é a outra ponta da mesma distribuição.
 
 ### Enquadramento
 
