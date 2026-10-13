@@ -46,6 +46,16 @@ npx -y skills add whoisraibolt/paper-skills --skill paper-writer   --agent claud
 Installs into `.claude/skills/` of the current project. Add `--global` to install
 for all projects.
 
+### Also available on Agensi
+
+Both skills are also listed on the [Agensi](https://agensi.io) marketplace, free
+of charge, for agents that install skills from there:
+
+- `paper-reviewer` — AGENSI_LINK_REVIEWER
+- `paper-writer` — AGENSI_LINK_WRITER
+
+The content is the same as in this repository.
+
 ### By reference, with no installer at all
 
 The repository is a plain skill tree, so an agent that resolves paths can read
@@ -199,7 +209,8 @@ evidence that a human wrote it. Same asymmetry as above, one level up.
 The instrument itself — both bands, the calibrated thresholds, the measurement
 notes and the three refusals — is in
 [`references/stage-3-5-language-signature.md`](skills/paper-reviewer/references/stage-3-5-language-signature.md),
-loaded by the Stage 3.5 reviewer at dispatch rather than carried in `SKILL.md`.
+read at dispatch and handed to the Stage 3.5 reviewer in full rather than carried
+in `SKILL.md`.
 
 ### Measured, not asserted
 
