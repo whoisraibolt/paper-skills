@@ -15,17 +15,17 @@ manuscript before you submit, each one quoted, checked and open to challenge.
 **Long description:**
 
 The errors that sink a paper are the ones a single read-through misses: a
-number in the abstract that disagrees with the table, a result the paper's own
-definition guarantees, a research question never answered. Paper Reviewer splits
-your manuscript into thematic segments and gives each one a dedicated reviewer
-that still sees the whole text, then merges everything into a single report.
-Each finding quotes the passage, says how it was checked, and states what would
-have to be true for it to be wrong. It also scans the writing for the patterns
-that make text read as machine-made, and reports them as writing problems you
-can fix, never as an accusation of authorship. It only reads: your manuscript is
-never edited. You get errors and improvements, not a score or an accept/reject
-verdict. Works on .tex, .md, .pdf and .docx, in English and Brazilian
-Portuguese.
+number in the abstract that disagrees with the table, or a result the paper's
+own definition guarantees. Paper Reviewer splits your manuscript into thematic
+segments and gives each one a dedicated reviewer that still sees the whole text,
+then merges everything into a single report. Each finding quotes the passage,
+says how it was checked, and states what would have to be true for it to be
+wrong. It also scans the writing for the patterns that make text read as
+machine-made, and reports them as writing problems you can fix, never as an
+accusation of authorship. It never edits your manuscript. You get errors and
+improvements, not a score or an accept/reject verdict. Works on .tex, .md, .pdf
+and .docx, in English and Brazilian Portuguese. Requires an agent that supports
+subagents, such as Claude Code.
 
 **Proof of result:** the repository includes a
 [full report](../examples/revisao-exemplo.md) produced by the skill on a
@@ -64,16 +64,21 @@ reference that is not in your .bib becomes [CITAÇÃO NECESSÁRIA]. Drafts follo
 the voice guide you set, so new text matches what you already wrote, and they
 are saved to a separate file: nothing reaches your manuscript until the markers
 are resolved. The result is a grounded draft for you to approve sentence by
-sentence, not finished text. The skill's instructions and its configuration
-template are written in Brazilian Portuguese, with an ABNT-oriented example; it
-is built for Portuguese-language academic writing.
+sentence, not finished text. Written in Brazilian Portuguese, for
+Portuguese-language academic writing, with an ABNT-oriented example. Requires an
+agent that supports subagents, such as Claude Code.
 
-**Proof of result:** `examples/` has no sample draft from this skill yet, so
-there is no output to show for it. What can be shown is the other half of the
-loop: a draft from Paper Writer is meant to go straight to Paper Reviewer, and
-the [example report](../examples/revisao-exemplo.md) shows the class of error
-the writer's rules exist to prevent, a headline number that differs between the
-abstract and the results table.
+**Proof of result:** the repository includes a
+[synthetic project](../examples/escrita-exemplo/) and the Results draft the
+skill produced from it. The project declares two data files as the only
+legitimate sources and marks an older data round as forbidden. The older round
+says the best architecture reaches 87.3%; the current one says 84.3%. The draft
+uses 84.3% and never opens the forbidden file. The section outline also asks for
+latency, which no declared file contains, so the draft carries four
+[VERIFICAR] markers there instead of numbers, and for that reason it was not
+merged into the manuscript. One comparison with p = 0.041 is reported as not
+reaching the corrected threshold of 0.0167 rather than as significant. All data
+in the example are synthetic.
 
 **Suggested category:** Writing & Content
 
@@ -93,9 +98,6 @@ suggestions are welcome there.
 
 ## Notes for whoever publishes these
 
-- **Requirement worth stating on the page.** Both skills dispatch one subagent
-  per segment. They were written for Claude Code and need an agent that can
-  launch subagents.
 - **Paper Writer is in Portuguese.** Only its frontmatter description is in
   English. The long description says so; a buyer who does not read Portuguese
   should know before installing.
@@ -105,5 +107,3 @@ suggestions are welcome there.
   point here. The 76-article calibration and the 49.4% agreement figure are
   about the language scan's thresholds, which is architecture rather than
   benefit; they stay in the README.
-- **Paper Writer has no example output.** Adding a synthetic draft to
-  `examples/` would give its listing the same kind of proof the reviewer has.
