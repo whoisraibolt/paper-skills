@@ -1,8 +1,8 @@
 # Stage 3.5 — automated language signature (the full instrument)
 
-Loaded on demand by the Stage 3.5 reviewer. `SKILL.md` carries the dispatch rule
-and the two sentences that have to survive into the report even if this file is
-never opened; everything needed in order to actually **measure** is here.
+Read in full by the main agent at dispatch and handed to the Stage 3.5 reviewer
+as content. `SKILL.md` carries the dispatch rule and the two sentences that have
+to survive into the report even if this file is never opened; everything needed in order to actually **measure** is here.
 
 Read this file in full before measuring anything, and pair it with the lexicon
 that matches the manuscript's language: [`lexicons-en.md`](lexicons-en.md) or

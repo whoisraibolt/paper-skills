@@ -1,7 +1,8 @@
 # Léxicos da Faixa A — português
 
 Listas fechadas dos critérios raspáveis do Estágio 3.5. São exatamente as listas
-usadas para produzir os limiares calibrados do `SKILL.md`.
+usadas para produzir os limiares calibrados de
+`stage-3-5-language-signature.md`.
 
 **Por que o idioma importa.** Rodar estes critérios com o léxico de outra língua
 devolve AUC exatamente 0,500: todo texto pontua zero e todos empatam. O
@@ -174,5 +175,7 @@ A3 é **independente de língua** e não precisa de adaptação.
 
 ## Frames (B5)
 
-Frames retóricos são casados por expressão regular, não por lista de palavras,
-então ficam no corpo da skill e não aqui.
+Frames retóricos são casados por padrão, não por lista de palavras, então não
+ficam aqui. O critério e o limiar estão na linha B5 de
+`stage-3-5-language-signature.md`. A skill não traz as expressões regulares em
+si.

@@ -1,7 +1,8 @@
 # Band A lexicons — English
 
 Closed word lists for the scrubbable criteria of Stage 3.5. These are the exact
-lists used to produce the calibrated thresholds in `SKILL.md`.
+lists used to produce the calibrated thresholds in
+`stage-3-5-language-signature.md`.
 
 **Why the language matters.** Running these criteria with the lexicon of another
 language returns an AUC of exactly 0.500: every text scores zero and all of them
@@ -159,5 +160,7 @@ A3 is **language-independent** and needs no adaptation.
 
 ## Frames (B5)
 
-Rhetorical frames are matched by regular expression rather than by word list, so
-they live in the skill body rather than here.
+Rhetorical frames are matched by pattern rather than by word list, so they are
+not listed here. The criterion and its threshold are in the B5 row of
+`stage-3-5-language-signature.md`. The skill does not ship the regular
+expressions themselves.
