@@ -256,12 +256,16 @@ Four hard rules, pasted verbatim into every writer subagent:
 
 ### Configuration is required
 
-`paper-writer` will not write a sentence until it finds a project config at
-`.claude/paper-writer.md`. Copy the template and fill it in:
+`paper-writer` will not write a sentence until it finds a filled-in project
+config at `.claude/paper-writer.md`. There is nothing to copy: on its first run
+in a project the skill creates that file from its own template, stops, and asks
+you to fill it in.
 
-```bash
-cp .claude/skills/paper-writer/references/project-config.template.md .claude/paper-writer.md
-```
+This works the same however the skill reached you — installed in the project,
+installed with `--global`, used without installing, or installed from Agensi —
+because the agent reads the template from wherever the skill lives and you never
+need to know where that is. The config itself always belongs to your manuscript's
+repository, not to the skill.
 
 The config declares your canonical artifacts, your **forbidden** superseded
 sources, the process narrative to keep out of the text, and your voice guide. See
