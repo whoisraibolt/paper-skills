@@ -1,12 +1,14 @@
 # paper-writer — configuração do projeto
 
-Copie este arquivo para `.claude/paper-writer.md` na raiz do repositório do seu
-manuscrito e preencha. A skill não escreve nada até encontrá-lo.
+Este é o config do `paper-writer` para o seu manuscrito. Ele mora em
+`.claude/paper-writer.md`, na raiz do repositório do manuscrito. Preencha todos
+os blocos: a skill não escreve nada enquanto ele não estiver preenchido.
 
 Ele é versionado junto com o manuscrito e evolui com ele. A skill permanece
 genérica; tudo que é específico do seu trabalho mora aqui.
 
-Há um exemplo completo e preenchido em `example-config-ptbr-abnt.md`.
+Há um exemplo completo e preenchido que acompanha a skill
+(`references/example-config-ptbr-abnt.md`). Peça ao agente para mostrá-lo.
 
 ---
 

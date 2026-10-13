@@ -20,7 +20,9 @@ Esta skill não escreve uma frase até saber de onde os números podem vir. Proc
 2. `paper-writer.config.md` na raiz do projeto
 3. o caminho que o usuário indicar
 
-**Se não existir nenhum, pare e peça.** Copie `references/project-config.template.md` (desta skill) para o projeto, peça ao usuário para preencher, e só então prossiga. Há um exemplo completo e preenchido em `references/example-config-ptbr-abnt.md`.
+**Se não existir nenhum, crie o arquivo, pare e peça.** Leia `references/project-config.template.md` e grave o conteúdo dele em `.claude/paper-writer.md`, na raiz do projeto. Esse caminho do template é relativo ao diretório onde está este `SKILL.md`, não ao projeto do usuário: quem lê é você, e o usuário não precisa copiar nada nem saber onde a skill está instalada. Se o template não puder ser lido, crie o arquivo com uma seção vazia para cada um dos quatro blocos da tabela abaixo, mais os caminhos do manuscrito, da bibliografia e do diretório de rascunhos, e avise que ele foi montado sem o template.
+
+Criar o arquivo não é ter config. Depois de criá-lo, peça ao usuário para preencher e só prossiga quando ele confirmar: um config com os campos ainda em branco vale o mesmo que nenhum. Há um exemplo completo e preenchido em `references/example-config-ptbr-abnt.md`, no mesmo diretório do template; mostre o conteúdo se o usuário pedir.
 
 Escrever sem config é o modo de falha que esta skill existe para impedir: sem lista de artefatos canônicos, um redator com pressa preenche o buraco com um número plausível, e número plausível é indistinguível de número certo até o parecerista conferir.
 
