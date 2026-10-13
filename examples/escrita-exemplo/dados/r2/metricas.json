@@ -1,0 +1,25 @@
+{
+  "_aviso": "DADOS SINTETICOS. Criados para demonstrar o paper-writer. Nao descrevem experimento real.",
+  "rodada": "r2",
+  "metrica": "acuracia_top5",
+  "n_itens": 1200,
+  "geral": {
+    "bm25":    {"acertos": 949,  "n": 1200, "acuracia_pct": 79.1, "ic95_pct": [76.8, 81.4]},
+    "densa":   {"acertos": 979,  "n": 1200, "acuracia_pct": 81.6, "ic95_pct": [79.4, 83.8]},
+    "hibrida": {"acertos": 1012, "n": 1200, "acuracia_pct": 84.3, "ic95_pct": [82.1, 86.5]}
+  },
+  "por_complexidade": {
+    "simples": {
+      "n": 780,
+      "bm25":    {"acertos": 655, "acuracia_pct": 84.0},
+      "densa":   {"acertos": 671, "acuracia_pct": 86.0},
+      "hibrida": {"acertos": 684, "acuracia_pct": 87.7}
+    },
+    "complexa": {
+      "n": 420,
+      "bm25":    {"acertos": 294, "acuracia_pct": 70.0},
+      "densa":   {"acertos": 308, "acuracia_pct": 73.3},
+      "hibrida": {"acertos": 328, "acuracia_pct": 78.1}
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "_aviso": "DADOS SINTETICOS. Rodada 1, SUPERSEDIDA pela rodada 2. Proibida como fonte: ver paper-writer.config.md.",
+  "rodada": "r1",
+  "metrica": "acuracia_top5",
+  "n_itens": 1200,
+  "geral": {
+    "bm25":    {"acuracia_pct": 79.1},
+    "densa":   {"acuracia_pct": 82.9},
+    "hibrida": {"acuracia_pct": 87.3}
+  },
+  "latencia_media_ms": {"bm25": 41, "densa": 118, "hibrida": 163}
+}

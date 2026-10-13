@@ -253,6 +253,12 @@ declared artifact, for a human to approve sentence by sentence.
 Because this one writes, its grounding discipline is stricter, not looser: here a
 hallucination becomes a false statement *inside* the paper.
 
+**→ [See a full example](examples/escrita-exemplo/)** — a synthetic project with
+declared artifacts and a forbidden superseded data round, and the Results draft
+`paper-writer` produced from it. The draft uses the current round's 84.3%, never
+the superseded 87.3%, and the one value no declared artifact contains comes out
+as `[VERIFICAR: ...]` markers that block the merge.
+
 Four hard rules, pasted verbatim into every writer subagent:
 
 1. **Only canonical artifacts are sources.** Nothing from a previous draft or a

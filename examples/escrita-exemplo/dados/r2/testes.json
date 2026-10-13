@@ -1,0 +1,14 @@
+{
+  "_aviso": "DADOS SINTETICOS. Criados para demonstrar o paper-writer. Nao descrevem experimento real.",
+  "rodada": "r2",
+  "teste": "McNemar",
+  "correcao": "Bonferroni",
+  "n_comparacoes": 3,
+  "alfa_nominal": 0.05,
+  "alfa_corrigido": 0.0167,
+  "comparacoes": [
+    {"par": ["hibrida", "bm25"],  "p_valor": 0.0004, "significativo_apos_correcao": true},
+    {"par": ["hibrida", "densa"], "p_valor": 0.012,  "significativo_apos_correcao": true},
+    {"par": ["densa", "bm25"],    "p_valor": 0.041,  "significativo_apos_correcao": false}
+  ]
+}
