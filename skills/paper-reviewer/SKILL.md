@@ -185,13 +185,32 @@ no internal project notes, no external service.
 
 The instrument itself — Band A and Band B, the calibrated thresholds, the
 measurement notes and the three refusals — lives in
-[`references/stage-3-5-language-signature.md`](references/stage-3-5-language-signature.md).
-The dispatching prompt must carry that path, plus the lexicon matching the
-manuscript's language — [`references/lexicons-en.md`](references/lexicons-en.md)
-for English or [`references/lexicons-pt.md`](references/lexicons-pt.md) for
-Brazilian Portuguese — and the instruction to **read both in full before
-measuring**. Running the wrong lexicon does not measure a little; it measures
-nothing (AUC 0.500). This stage does not run from a memory of this file.
+[`references/stage-3-5-language-signature.md`](references/stage-3-5-language-signature.md),
+next to the lexicon matching the manuscript's language:
+[`references/lexicons-en.md`](references/lexicons-en.md) for English or
+[`references/lexicons-pt.md`](references/lexicons-pt.md) for Brazilian
+Portuguese. Running the wrong lexicon does not measure a little; it measures
+nothing (AUC 0.500).
+
+Those paths are relative to the directory holding this `SKILL.md`, not to the
+user's project, and a subagent starts in the user's project. So **you** read
+both files in full, before dispatching, and paste their complete content into
+the Stage 3.5 prompt, under the instruction to measure from that content alone.
+Do not hand the reviewer a path to either file, and do not summarize them: the
+thresholds and the word lists have to arrive verbatim.
+
+This stage does not run from a memory of this file. If the instrument or the
+matching lexicon cannot be read, **Stage 3.5 does not run**: dispatch no
+reviewer for it, and put this in the report where its findings would go, with
+the reason filled in:
+
+> **Stage 3.5 was NOT EXECUTED.** Reason: `<which file could not be read, and
+> why>`. No language-signature criterion was measured. This is not a clean
+> result, and the absence of Stage 3.5 findings in this report licenses no
+> inference about the writing.
+
+Never list an unexecuted Stage 3.5 under "Checked and clean", and name it in the
+chat summary alongside the `CRITICAL` and `HIGH` findings.
 
 Two things have to reach the report whether or not that file was opened.
 
